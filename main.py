@@ -1,5 +1,8 @@
+from tests.test import Tests as T
+
 def main():
-    print("Start somthing")
+    T.test_keys()
+    T.test_timelock()
 
 
 if __name__ == "__main__":
