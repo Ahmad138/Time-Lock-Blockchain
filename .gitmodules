@@ -1,0 +1,3 @@
+[submodule "app/p2p_network"]
+	path = app/p2p_network
+	url = https://github.com/macsnoeren/python-p2p-network.git
