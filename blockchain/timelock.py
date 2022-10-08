@@ -5,7 +5,10 @@ import datetime
 import time
 import hashlib
 import base64
+from typing import Optional
 from cryptography.fernet import Fernet
+import random
+import numpy as np
 #from Crypto import Random
 
 class Timelock:
@@ -13,7 +16,8 @@ class Timelock:
         pass
 
     def generate_by_time(self, seed, delta):
-        end = time.time() + delta.total_seconds()
+        #end = time.time() + delta.total_seconds()
+        end = time.time() + delta
         h = hashlib.sha256(str(seed).encode('utf-8')).digest()
         iters = 0
         try:
@@ -39,15 +43,15 @@ class Timelock:
     def generate_seed(self, x):    
         #x ==> number of timeblocks
         IV = []       
-        seed = []
+        #seed = []
         for i in range(x):
             s = str(os.urandom(64))
-            y = hashlib.sha256(str(s).encode('utf-8')).digest()
+            #y = hashlib.sha256(str(s).encode('utf-8')).digest()
 
             IV.append(s)
-            seed.append(y)
+            #seed.append(y)
 
-        return seed
+        return IV
 
     def timeblock(self, seed, d):    
         h, n = self.generate_by_time(str(seed), d) 
@@ -77,4 +81,39 @@ class Timelock:
                 if num < len(timechain):
                     h = self.generate_by_iters(str(seed), n[num+1])
         return Fernet(h).decrypt(timelocked_msg)
+
+    def lot(self, collection, slots, redundancies, seeds):
+        #For choosing randomly
+        #slots: how many to be chosen and returned
+        winners = []    
+        #shuffling a multi dimentional array has issues
+        #print(self.custom_shuffle(collection))
+        used_nodes=[]
+
+        if len(collection) > len(seeds):            
+            for i in seeds:
+                for j in range(int(redundancies)):
+                    x = random.choice(tuple(self.custom_shuffle(collection)))
+                    while x in used_nodes:
+                        x = random.choice(tuple(self.custom_shuffle(collection)))
+                    used_nodes.append(x)
+                    temp = []
+                    temp.append(x)
+                    temp.append(i)
+
+                    winners.append(temp)
+                    #print("node: {} and seed: {}".format(x, i))
+        else:
+            print("You need more collections or less required slots")
+
+        return winners
+
+    def custom_shuffle(self, collection):
+        shuffled = []
+        for i in range(len(collection)):
+            x = random.choice(tuple(collection))
+            while x in shuffled:
+                x = random.choice(tuple(collection))
+            shuffled.append(x)
+        return shuffled
 
