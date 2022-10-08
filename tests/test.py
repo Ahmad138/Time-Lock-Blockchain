@@ -45,6 +45,7 @@ class Tests():
         time.sleep(1)
         self.node_1.start()
         time.sleep(1)
+        self.TL = timelock()
 
     def test_keys(self):
         pr = k.gen_keys()
@@ -173,40 +174,36 @@ class Tests():
         Implement here your own application logic. The event holds the event that occurred within
         the network. The main_node contains the node that is handling the connection with and from
         other nodes. An event is most probably triggered by the connected_node! If there is data
-        it is represented by the data variable.
+        it is represented by the data variable. """
         
         try:
-            # node_request_to_stop does not have any connected_node, while it is the main_node that is stopping!
+        # node_request_to_stop does not have any connected_node, while it is the main_node that is stopping!
             if event != 'node_request_to_stop':
                 #print('Event: {} from main node {}: connected node {}: {}'.format(event, main_node.id, connected_node.id, data))
-                key = ["operation"]
-                print(data)
-                if data.get(key[0]) is not None:
-                    #print(f"Yes, key: '{key[0]}' exists in dictionary")
-                    #print(data[key[0]])
-                    if data[key[0]] == "timeblock":
-                        #TL = timelock()
-                        #h, n = TL.timeblock(data.seed, data.delta)
-                        #print ("h: {} and n: {}".format(h, n))
-                        # Check if node is already connected with this node!
-                        for node in main_node.all_nodes:
-                            if data["return_node_id"] == node.id:
-                                print(f"connect_with_node: Already connected with this node ({node}).")
-                                main_node.send_to_node(node, "Acknowledged")
-                                #return True
-                                #print(data["seed"])
+                key = ["id",  "operation", "seed", "delta", "return_node_id"]           
+                if data.get(key[1]) is not None:
+                    if data.get(key[1]) == "timeblock":
+                        h, n = self.TL.timeblock(data.get(key[2]), data.get(key[3]))
+                        #print(n)
+                        msg = {
+                                "id": random.randint(1,999999999999),
+                                "operation": "timeblocked",
+                                "h": (h).decode('utf-8'),
+                                "n": n,
+                                "return_node_id": main_node.id
+                            }
+                        
+                        for node in main_node.nodes_inbound:                        
+                            if data.get(key[4]) == node.id:
+                                main_node.send_to_node(node, msg)
+                                #print(node)                        
                 else:
-                    print(f"No, key: '{key[0]}' does not exists in dictionary")
+                    print(f"key: '{key[0]}' does not exists in dictionary")
             
         except Exception as e:
             print(e)
-         """
-        try:
-            if event != 'node_request_to_stop':
-                print(data)            
-        except Exception as e:
-            print(e)
-       
+         
+               
     def get_ip(self): 
         hostname=socket.gethostname()   
         IPAddr=socket.gethostbyname(hostname)   

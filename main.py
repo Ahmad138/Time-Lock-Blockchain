@@ -8,7 +8,7 @@ def main():
     T = Tests()    
     #T.get_ip()
     #T.test_keys()
-    T.test_p2p()
+    #T.test_p2p()
     #T.test_timelock()
     #T.test_p2p()
     #T.test_dotenv()
